@@ -1,0 +1,47 @@
+version: "3"
+services:
+  laravel-docker:
+    container_name: laravel-docker
+    # command: sh -c "php artisan config:clear && php artisan serve"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /var/www/html
+    volumes:
+      - ./laravel-app:/var/www/html
+      - ./laravel-app/apache/apache.conf:/etc/apache2/conf-available/my-apache.conf
+    environment:
+      MYSQL_HOST: laravel-mysql
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_DB: laravel
+    ports:
+      - 127.0.0.1:9000:9000
+    depends_on:
+      - laravel-mysql
+
+  laravel-mysql:
+    container_name: laravel-mysql
+    image: mysql:latest
+    volumes:
+      - laravel-docker-mysql-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: laravel
+    ports:
+      - 3308:3306
+
+  phpmyadmin:
+    container_name: phpmyadmin
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - 8080:80
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=laravel-mysql
+      - PMA_USER=root
+      - PMA_PASSWORD=root
+      - PMA_PORT=3306
+
+volumes:
+  laravel-docker-mysql-data:
